@@ -1,4 +1,3 @@
-const { raw } = require('express');
 const inquirer = require('inquirer');
 const prompt = inquirer.createPromptModule();
 const mysql = require('mysql2');
