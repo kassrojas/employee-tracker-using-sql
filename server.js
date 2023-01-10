@@ -29,37 +29,53 @@ const insert = (table, data) => {
     });
 };
 
-const selectAllNameAndValue = (table, name, value) => {
-    return db.promise().query('SELECT ?? AS name, ?? AS value FROM ??', [name, value, table]);
-};
+// const selectAllNameAndValue = (table, name, value) => {
+//     return db.promise().query('SELECT ?? AS name, ?? AS value FROM ??', [name, value, table]);
+// };
 
-const selectEmployeeDetails = async () => {
-    const prepared =  `
-SELECT
-    employee.id, 
-    employee.first_name, 
-    employee.last_name, 
-    role.title, 
-    role.salary,
-    CONCAT (
-        manager.first_name, 
-        ' ',
-        manager.last_name, 
-    ) AS manager
-    FROM employee
-    JOIN role
-    ON employee.role_id = role.id
-    JOIN employee AS manager
-    ON employee.manager_id = manager.id
-    `
-    const [ employees ] = await db.promise().query(prepared);
-    console.table(employees);
-};
+// const selectAllEmployeeDetails = async () => {
+//     const statement = `
+//   SELECT
+//     employee.id,
+//     employee.first_name,
+//     employee.last_name,
+//     role.title,
+//     role.salary,
+//     CONCAT(
+//       manager.first_name,
+//       ' ',
+//       manager.last_name
+//     ) AS manager
+//   FROM employee
+//   JOIN role
+//   ON employee.role_id = role.id
+//   JOIN employee AS manager
+//   ON employee.manager_id = manager.id
+//     `
+//     const [employees] = await db.promise().query(statement);
+//     console.table(employees);
+// };
 
 const addEmployee = async () => {
-    const [roles] = await selectAllNameAndValue('role');
-    const [managers] = await selectAllNameAndValue('employee');
-    
+    // const [roles] = await selectAllNameAndValue('role', 'title', 'id');
+//   const [managers] = await selectAllNameAndValue('employee', 'last_name', 'id');
+
+    const [roleData] = await selectAll('role');
+    const roles = roleData.map(role => {
+        return {
+            name: role.title,
+            value: role.id
+        }
+    });
+
+    const [employeeData] = await selectAll('employee');
+    const managers = employeeData.map(employee => {
+        return {
+            name: employee.first_name + ' ' + employee.last_name,
+            value: employee.id
+        }
+    })
+
     prompt([
         {
             name: 'first_name',
@@ -83,9 +99,9 @@ const addEmployee = async () => {
         }
 
     ])
-    .then((answers) => {
-        insert('employee', answers);
-    })
+        .then((answers) => {
+            insert('employee', answers);
+        })
 
 };
 
@@ -101,7 +117,7 @@ const chooseOption = (type) => {
             break;
         }
         case 'VIEW All Employees': {
-            selectEmployeeDetails();
+            selectAll('employee', true);
             break;
         }
         case 'ADD A Department': {
