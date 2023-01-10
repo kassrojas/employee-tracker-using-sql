@@ -9,8 +9,8 @@ INSERT INTO department (name)
 INSERT INTO role ( title, salary, department_id )
     VALUES
     ('Lead Engineer', 100000, 1),
-    ('Junior Engineer', 75000, 2),
-    ('HR Advisor', 60000, 1),
+    ('Junior Engineer', 75000, 1),
+    ('HR Advisor', 60000, 2),
     ('HR Chief Executive', 75000, 2);
 
 INSERT INTO employee ( first_name, last_name, role_id, manager_id )

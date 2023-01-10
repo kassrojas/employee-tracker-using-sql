@@ -36,8 +36,8 @@ WHEN I choose to view all roles
 THEN I am presented with the 
     <!-- job title,  -->
     <!-- role id,  -->
-    the department that role belongs to
-        currently have department_id
+    <!-- the department that role belongs to
+        currently have department_id -->
     <!-- the salary for that role -->
 
 WHEN I choose to view all employees

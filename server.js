@@ -13,7 +13,7 @@ const db = mysql.createConnection(
 
 // () displays full selected table
 const selectAll = async (table, showTable) => {
-    const results = await db.promise().query('SELECT * FROM ' + table);
+    const results = await db.promise().query(`SELECT * FROM ${table}`);
     if (showTable) {
         console.table(results[0]);
         return init();
@@ -22,39 +22,54 @@ const selectAll = async (table, showTable) => {
 };
 
 const insert = (table, data) => {
-    db.query('INSERT INTO ?? SET ?', [table, data], (err) => {
-        if (!err) return console.error(err);
+    db.query(`INSERT INTO ${table}  SET ?`, [data], (err) => {
+        if (err) return console.error(err);
         console.log('\nSuccessfully created employee!');
         init();
     });
 };
 
-// const selectAllNameAndValue = (table, name, value) => {
-//     return db.promise().query('SELECT ?? AS name, ?? AS value FROM ??', [name, value, table]);
-// };
 
-// const selectAllEmployeeDetails = async () => {
-//     const statement = `
-//   SELECT
-//     employee.id,
-//     employee.first_name,
-//     employee.last_name,
-//     role.title,
-//     role.salary,
-//     CONCAT(
-//       manager.first_name,
-//       ' ',
-//       manager.last_name
-//     ) AS manager
-//   FROM employee
-//   JOIN role
-//   ON employee.role_id = role.id
-//   JOIN employee AS manager
-//   ON employee.manager_id = manager.id
-//     `
-//     const [employees] = await db.promise().query(statement);
-//     console.table(employees);
-// };
+const viewAllRoles = () => {
+    db.query(`
+    SELECT 
+        role.title AS job_title, 
+        role.id AS role_id, 
+        department.name AS dept_name, 
+        role.salary AS role_salary
+    FROM role 
+    LEFT JOIN department 
+    ON role.department_id = department.id
+    `, (err, results)  => {
+        if (err) return console.error(err);
+        // console.log('\nSuccessfully created employee!');
+        console.table(results)
+        init();
+    })
+};
+
+const viewAllEmployees = () => {
+    db.query(`
+    SELECT 
+        employee.id,
+        employee.first_name,
+        employee.last_name, 
+        role.title AS job_title, 
+        department.name AS dept_name,
+        role.salary, 
+        employee.manager_id AS manager
+    FROM employee 
+    LEFT JOIN role 
+    ON employee.role_id = role.id
+    `, (err, results)  => {
+        if (err) return console.error(err);
+        // console.log('\nSuccessfully created employee!');
+        console.table(results)
+        init();
+    })
+}
+
+
 
 const addEmployee = async () => {
     // const [roles] = await selectAllNameAndValue('role', 'title', 'id');
@@ -76,7 +91,7 @@ const addEmployee = async () => {
         }
     })
 
-    prompt([
+    const newEmployee = await prompt([
         {
             name: 'first_name',
             message: 'Enter the employee\'s FIRST name',
@@ -98,10 +113,10 @@ const addEmployee = async () => {
             choices: managers,
         }
 
-    ])
-        .then((answers) => {
-            insert('employee', answers);
-        })
+    ]);
+    
+    insert('employee', newEmployee);
+        
 
 };
 
@@ -113,11 +128,11 @@ const chooseOption = (type) => {
             break;
         }
         case 'VIEW All Roles': {
-            selectAll('role', true);
+            viewAllRoles();
             break;
         }
         case 'VIEW All Employees': {
-            selectAll('employee', true);
+            viewAllEmployees();
             break;
         }
         case 'ADD A Department': {
