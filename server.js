@@ -1,3 +1,4 @@
+const { raw } = require('express');
 const inquirer = require('inquirer');
 const prompt = inquirer.createPromptModule();
 const mysql = require('mysql2');
@@ -13,8 +14,8 @@ const db = mysql.createConnection(
 
 // () displays full selected table
 const selectAll = async (table, showTable) => {
-    const results = await db.promise().query('SELECT * FROM ' + table); 
-    if (showTable){
+    const results = await db.promise().query('SELECT * FROM ' + table);
+    if (showTable) {
         console.table(results[0]);
         return init();
     }
@@ -22,44 +23,52 @@ const selectAll = async (table, showTable) => {
 };
 
 const insert = (table, data) => {
-    db.query('INSERT INTO ?? SET ?',[ table, data ], (err) => {
-        if (!err) console.log('\nSuccessfully created employee!');
+    db.query('INSERT INTO ?? SET ?', [table, data], (err) => {
+        if (!err) return console.error(err);
+        console.log('\nSuccessfully created employee!');
+        init();
     });
-    init();
 };
 
-addEmployee = async () => {
-    const [ roleData ] = await selectAll('role');
-    const roles = roleData.map( role => {
+const addEmployee = async () => {
+    const [roleData] = await selectAll('role');
+    const [employeeData] = await selectAll('employee');
+    const roles = roleData.map(role => {
         return {
-            name : role.title,
-            value : role.id,
+            name: role.title,
+            value: role.id,
         }
     });
-    const managers = roleData.map( role => {
+    const managers = employeeData.map(employee => {
         return {
-            name : role.title,
-            value : role.id,
+            name: employee.first_name + ' ' + employee.last_name,
+            value: employee.id
         }
     });
     prompt([
         {
             name: 'first_name',
-            message: 'Enter the employee\'s FIRST name.',
+            message: 'Enter the employee\'s FIRST name',
         },
         {
             name: 'last_name',
-            message: 'Enter the employee\'s LAST name.',
+            message: 'Enter the employee\'s LAST name',
         },
         {
             type: 'rawlist',
             name: 'role_id',
-            message: 'Choose a role for this employee',
-            choices: roles, 
+            message: 'Select the role for this employee',
+            choices: roles,
+        },
+        {
+            type: 'rawlist',
+            name: 'manager_id',
+            message: 'Select the manager for this employee',
+            choices: managers,
         }
 
     ])
-    .then ((answers) => {
+    .then((answers) => {
         insert('employee', answers);
     })
 
@@ -81,23 +90,23 @@ const chooseOption = (type) => {
             break;
         }
         case 'ADD A Department': {
-                addDept();
-                break;
+            addDept();
+            break;
         };
         case 'ADD A Role': {
-                addRole();
-                break;
+            addRole();
+            break;
         };
         case 'ADD An Employee': {
-                addEmployee();
-                break;
+            addEmployee();
+            break;
         };
         case 'UPDATE An existing Employee': {
-                updateEmployee();
-                break;
+            updateEmployee();
+            break;
         };
-        }
     }
+}
 
 const init = () => {
 
