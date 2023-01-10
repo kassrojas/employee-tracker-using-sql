@@ -11,15 +11,14 @@ const db = mysql.createConnection(
     console.log('connected to  employee_db')
 );
 
-// db.connection();
-const selectAll = (table) => {
-    db.query('SELECT * FROM department', (err, deparments) => {
-        if (err) {
-            console.error(err);
-        }
-        console.table(deparments);
-        init();
-    });
+// () displays full selected table
+const selectAll = async (table, showTable) => {
+    const results = await db.promise().query('SELECT * FROM ' + table); 
+    if (showTable){
+        console.table(results[0]);
+        return init();
+    }
+    return results;
 };
 
 const insert = (table, data) => {
@@ -29,8 +28,20 @@ const insert = (table, data) => {
     init();
 };
 
-addEmployee = () => {
-    const roles = selectAll('role');
+addEmployee = async () => {
+    const [ roleData ] = await selectAll('role');
+    const roles = roleData.map( role => {
+        return {
+            name : role.title,
+            value : role.id,
+        }
+    });
+    const managers = roleData.map( role => {
+        return {
+            name : role.title,
+            value : role.id,
+        }
+    });
     prompt([
         {
             name: 'first_name',
@@ -39,6 +50,12 @@ addEmployee = () => {
         {
             name: 'last_name',
             message: 'Enter the employee\'s LAST name.',
+        },
+        {
+            type: 'rawlist',
+            name: 'role_id',
+            message: 'Choose a role for this employee',
+            choices: roles, 
         }
 
     ])
@@ -52,40 +69,23 @@ const chooseOption = (type) => {
 
     switch (type) {
         case 'VIEW All Departments': {
-            db.query('SELECT * FROM department', (err, deparments) => {
-                if (err) {
-                    console.error(err);
-                }
-                console.table(deparments);
-                init();
-            });
+            selectAll('department', true);
             break;
         }
         case 'VIEW All Roles': {
-            db.query('SELECT * FROM role', (err, roles) => {
-                if (err) {
-                    console.error(err);
-                }
-                console.table(roles);
-                init();
-            });
+            selectAll('role', true);
             break;
         }
         case 'VIEW All Employees': {
-            db.query('SELECT * FROM employee', (err, employees) => {
-                console.table(employees);
-                init();
-            });
+            selectAll('employee', true);
             break;
         }
         case 'ADD A Department': {
                 addDept();
-                init();
                 break;
         };
         case 'ADD A Role': {
                 addRole();
-                init();
                 break;
         };
         case 'ADD An Employee': {
@@ -94,7 +94,6 @@ const chooseOption = (type) => {
         };
         case 'UPDATE An existing Employee': {
                 updateEmployee();
-                init();
                 break;
         };
         }
