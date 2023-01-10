@@ -30,21 +30,37 @@ const insert = (table, data) => {
     });
 };
 
+const selectAllNameAndValue = (table, name, value) => {
+    return db.promise().query('SELECT ?? AS name, ?? AS value FROM ??', [name, value, table]);
+};
+
+const selectEmployeeDetails = async () => {
+    const prepared =  `
+SELECT
+    employee.id, 
+    employee.first_name, 
+    employee.last_name, 
+    role.title, 
+    role.salary,
+    CONCAT (
+        manager.first_name, 
+        ' ',
+        manager.last_name, 
+    ) AS manager
+    FROM employee
+    JOIN role
+    ON employee.role_id = role.id
+    JOIN employee AS manager
+    ON employee.manager_id = manager.id
+    `
+    const [ employees ] = await db.promise().query(prepared);
+    console.table(employees);
+};
+
 const addEmployee = async () => {
-    const [roleData] = await selectAll('role');
-    const [employeeData] = await selectAll('employee');
-    const roles = roleData.map(role => {
-        return {
-            name: role.title,
-            value: role.id,
-        }
-    });
-    const managers = employeeData.map(employee => {
-        return {
-            name: employee.first_name + ' ' + employee.last_name,
-            value: employee.id
-        }
-    });
+    const [roles] = await selectAllNameAndValue('role');
+    const [managers] = await selectAllNameAndValue('employee');
+    
     prompt([
         {
             name: 'first_name',
@@ -86,7 +102,7 @@ const chooseOption = (type) => {
             break;
         }
         case 'VIEW All Employees': {
-            selectAll('employee', true);
+            selectEmployeeDetails();
             break;
         }
         case 'ADD A Department': {
