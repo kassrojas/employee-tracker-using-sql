@@ -11,6 +11,43 @@ const db = mysql.createConnection(
     console.log('connected to  employee_db')
 );
 
+// db.connection();
+const selectAll = (table) => {
+    db.query('SELECT * FROM department', (err, deparments) => {
+        if (err) {
+            console.error(err);
+        }
+        console.table(deparments);
+        init();
+    });
+};
+
+const insert = (table, data) => {
+    db.query('INSERT INTO ?? SET ?',[ table, data ], (err) => {
+        if (!err) console.log('\nSuccessfully created employee!');
+    });
+    init();
+};
+
+addEmployee = () => {
+    const roles = selectAll('role');
+    prompt([
+        {
+            name: 'first_name',
+            message: 'Enter the employee\'s FIRST name.',
+        },
+        {
+            name: 'last_name',
+            message: 'Enter the employee\'s LAST name.',
+        }
+
+    ])
+    .then ((answers) => {
+        insert('employee', answers);
+    })
+
+};
+
 const chooseOption = (type) => {
 
     switch (type) {
@@ -36,9 +73,6 @@ const chooseOption = (type) => {
         }
         case 'VIEW All Employees': {
             db.query('SELECT * FROM employee', (err, employees) => {
-                if (err) {
-                    console.error(err);
-                }
                 console.table(employees);
                 init();
             });
@@ -56,7 +90,6 @@ const chooseOption = (type) => {
         };
         case 'ADD An Employee': {
                 addEmployee();
-                init();
                 break;
         };
         case 'UPDATE An existing Employee': {
@@ -87,5 +120,9 @@ const init = () => {
             chooseOption(answers.type);
         });
 };
+
+
+// db.end();
+// Closing the connection using end() makes sure all remaining queries are executed before sending a quit packet to the mysql server.
 
 init();
