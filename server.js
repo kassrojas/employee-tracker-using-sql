@@ -11,22 +11,23 @@ const db = mysql.createConnection(
     console.log('connected to  employee_db')
 );
 
+
 const insert = (table, data) => {
-    db.query(`INSERT INTO ${table} SET ?`, [data], (err) => {
+    db.query(`INSERT INTO ${table}  SET ?`, [data], (err) => {
         if (err) return console.error(err);
         console.log('\nSuccessfully created employee!');
         init();
     });
 };
 
-const viewAllDepts = () => {
-    db.query(`
-    SELECT * FROM department
-    `), (err, results) => {
-        if (err) return console.error(err);
-        console.table(results);
-        init();
+// () displays full selected table
+const viewAllDepts = async (table, showTable) => {
+    const results = await db.promise().query(`SELECT * FROM ${table}`);
+    if (showTable) {
+        console.table(results[0]);
+        return init();
     }
+    return results;
 };
 
 const viewAllRoles = () => {
@@ -41,6 +42,7 @@ const viewAllRoles = () => {
     ON role.department_id = department.id
     `, (err, results)  => {
         if (err) return console.error(err);
+        // console.log('\nSuccessfully created employee!');
         console.table(results)
         init();
     })
@@ -62,6 +64,7 @@ const viewAllEmployees = () => {
     LEFT JOIN employee AS manager ON employee.manager_id = manager.id
     `, (err, results)  => {
         if (err) return console.error(err);
+        // console.log('\nSuccessfully created employee!');
         console.table(results)
         init();
     })
@@ -70,7 +73,6 @@ const viewAllEmployees = () => {
 
 
 const addEmployee = async () => {
-    
     const [roleData] = await selectAll('role');
     const roles = roleData.map(role => {
         return {
@@ -120,7 +122,7 @@ const chooseOption = (type) => {
 
     switch (type) {
         case 'VIEW All Departments': {
-            viewAllDepts();
+            viewAllDepts('department', true);
             break;
         }
         case 'VIEW All Roles': {
