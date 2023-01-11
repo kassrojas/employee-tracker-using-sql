@@ -15,15 +15,15 @@ const db = mysql.createConnection(
 const insertInto = (table, data) => {
     db.query(`INSERT INTO ${table}  SET ?`, [data], (err) => {
         if (err) return console.error(err);
-        console.log('\nSuccessfully created employee!');
+        console.log(`\nSuccessfully added new entry to ${table} table!\n`);
         init();
     });
 };
 
 // a way to display all departments using .promise()
-const viewAllDepts = async (table, showTable) => {
-    const results = await db.promise().query(`SELECT * FROM ${table}`);
-    if (showTable) {
+const selectAll = async (table, display) => {
+    const results = await db.promise().query('SELECT * FROM ' + table);
+    if (display) {
         console.table(results[0]);
         return init();
     }
@@ -41,7 +41,7 @@ const viewAllRoles = () => {
     FROM role 
     LEFT JOIN department 
     ON role.department_id = department.id
-    `, (err, results)  => {
+    `, (err, results) => {
         if (err) return console.error(err);
         console.table(results)
         init();
@@ -62,13 +62,56 @@ const viewAllEmployees = () => {
     LEFT JOIN role ON employee.role_id = role.id
     LEFT JOIN department ON role.department_id = department.id
     LEFT JOIN employee AS manager ON employee.manager_id = manager.id
-    `, (err, results)  => {
+    `, (err, results) => {
         if (err) return console.error(err);
         console.table(results)
         init();
     })
 };
 
+
+const addDept = () => {
+    prompt([
+        {
+            name: 'name',
+            message: 'Enter the name of the department you would like to add',
+        }
+    ])
+    .then ((answer) => {
+        insertInto('department', answer);
+    })
+}
+
+const addRole = async () => {
+    
+    const [deptData] = await selectAll('department');
+    const departments = deptData.map(department => {
+        return {
+            name: department.name,
+            value: department.id,
+        }
+    })
+    
+    const newRole = await prompt([
+        {
+            name: 'title',
+            message: 'Enter the new role you would like to add', 
+        },
+        {
+            name: 'salary',
+            message: 'Enter the salary for this role', 
+        },
+        {
+            type: 'rawlist',
+            name: 'department_id',
+            message: 'Select the department that this role falls under',
+            choices: departments,
+        }
+    ])
+    
+    insertInto('role', newRole);
+
+}
 
 const addEmployee = async () => {
     const [roleData] = await selectAll('role');
@@ -117,7 +160,7 @@ const chooseOption = (type) => {
 
     switch (type) {
         case 'VIEW All Departments': {
-            viewAllDepts('department', true);
+            selectAll('department', true);
             break;
         }
         case 'VIEW All Roles': {
@@ -168,8 +211,5 @@ const init = () => {
         });
 };
 
-
-// db.end();
-// Closing the connection using end() makes sure all remaining queries are executed before sending a quit packet to the mysql server.
 
 init();
