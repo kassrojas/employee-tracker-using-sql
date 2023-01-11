@@ -12,7 +12,7 @@ const db = mysql.createConnection(
 );
 
 
-const insert = (table, data) => {
+const insertInto = (table, data) => {
     db.query(`INSERT INTO ${table}  SET ?`, [data], (err) => {
         if (err) return console.error(err);
         console.log('\nSuccessfully created employee!');
@@ -20,7 +20,7 @@ const insert = (table, data) => {
     });
 };
 
-// () displays full selected table
+// a way to display all departments using .promise()
 const viewAllDepts = async (table, showTable) => {
     const results = await db.promise().query(`SELECT * FROM ${table}`);
     if (showTable) {
@@ -30,6 +30,7 @@ const viewAllDepts = async (table, showTable) => {
     return results;
 };
 
+// way to display all roles without using .promise() or await
 const viewAllRoles = () => {
     db.query(`
     SELECT 
@@ -42,7 +43,6 @@ const viewAllRoles = () => {
     ON role.department_id = department.id
     `, (err, results)  => {
         if (err) return console.error(err);
-        // console.log('\nSuccessfully created employee!');
         console.table(results)
         init();
     })
@@ -64,12 +64,10 @@ const viewAllEmployees = () => {
     LEFT JOIN employee AS manager ON employee.manager_id = manager.id
     `, (err, results)  => {
         if (err) return console.error(err);
-        // console.log('\nSuccessfully created employee!');
         console.table(results)
         init();
     })
-}
-
+};
 
 
 const addEmployee = async () => {
@@ -112,10 +110,7 @@ const addEmployee = async () => {
         }
 
     ]);
-    
-    insert('employee', newEmployee);
-        
-
+    insertInto('employee', newEmployee);
 };
 
 const chooseOption = (type) => {
