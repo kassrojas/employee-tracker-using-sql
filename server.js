@@ -156,6 +156,50 @@ const addEmployee = async () => {
     insertInto('employee', newEmployee);
 };
 
+const updatedEmployeeTable = (employee, role) => {
+    db.query(`UPDATE employee SET role_title = ${role} WHERE id = ${employee}`), (err, results) => {
+        if (err) return console.error(err);
+        console.table(results)
+        init();
+    };
+};
+
+const updateEmployeeRole = async () => {
+    
+    const [roleData] = await selectAll('role');
+    const roles = roleData.map(role => {
+        return {
+            name: role.title,
+            value: role.id
+        }
+    })
+
+    const [employeeData] = await selectAll('employee');
+    const employees = employeeData.map(employee => {
+        return {
+            name: employee.first_name + ' ' + employee.last_name,
+            value: employee.id
+        }
+    })
+    
+    const updateAnswers = await prompt ([
+        {
+            type: 'rawlist',
+            name: 'employee_id',
+            message: 'Which employee\'s role would you like to update?',
+            choices: employees,
+        },
+        {
+            type: 'rawlist',
+            name: 'role_id',
+            message: 'Select the role you would like to re-assign to the selected employee',
+            choices: roles,
+        }
+    ])
+    updatedEmployeeTable(updateAnswers);
+};
+
+
 const chooseOption = (type) => {
 
     switch (type) {
@@ -184,7 +228,7 @@ const chooseOption = (type) => {
             break;
         };
         case 'UPDATE An existing Employee': {
-            updateEmployee();
+            updateEmployeeRole();
             break;
         };
     }
