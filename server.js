@@ -156,15 +156,15 @@ const addEmployee = async () => {
     insertInto('employee', newEmployee);
 };
 
-const updatedEmployeeTable = (employee, role) => {
-    db.query(`UPDATE employee SET role_title = ${role} WHERE id = ${employee}`), (err, results) => {
+const updatedEmployeeTable = ({ employee_id, role_id }) => {
+    db.query(`UPDATE employee SET role_id = ${role_id} WHERE id = ${employee_id}`, (err, results) => {
         if (err) return console.error(err);
-        console.table(results)
+        console.log(`\nSuccessfully updated the employee\'s role!\n`);
         init();
-    };
+    });
 };
 
-const updateEmployeeRole = async () => {
+const updateEmployee = async () => {
     
     const [roleData] = await selectAll('role');
     const roles = roleData.map(role => {
@@ -182,7 +182,7 @@ const updateEmployeeRole = async () => {
         }
     })
     
-    const updateAnswers = await prompt ([
+    const answers = await prompt ([
         {
             type: 'rawlist',
             name: 'employee_id',
@@ -196,7 +196,7 @@ const updateEmployeeRole = async () => {
             choices: roles,
         }
     ])
-    updatedEmployeeTable(updateAnswers);
+    updatedEmployeeTable(answers);
 };
 
 
@@ -228,7 +228,7 @@ const chooseOption = (type) => {
             break;
         };
         case 'UPDATE An existing Employee': {
-            updateEmployeeRole();
+            updateEmployee();
             break;
         };
     }
