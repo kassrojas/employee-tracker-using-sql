@@ -57,10 +57,11 @@ const viewAllEmployees = () => {
         role.title AS job_title, 
         department.name AS dept_name,
         role.salary, 
-        employee.manager_id AS manager
+        CONCAT (manager.first_name, ' ' , manager.last_name) AS manager
     FROM employee 
-    LEFT JOIN role 
-    ON employee.role_id = role.id
+    LEFT JOIN role ON employee.role_id = role.id
+    LEFT JOIN department ON role.department_id = department.id
+    LEFT JOIN employee AS manager ON employee.manager_id = manager.id
     `, (err, results)  => {
         if (err) return console.error(err);
         // console.log('\nSuccessfully created employee!');
@@ -72,9 +73,7 @@ const viewAllEmployees = () => {
 
 
 const addEmployee = async () => {
-    // const [roles] = await selectAllNameAndValue('role', 'title', 'id');
-//   const [managers] = await selectAllNameAndValue('employee', 'last_name', 'id');
-
+    
     const [roleData] = await selectAll('role');
     const roles = roleData.map(role => {
         return {
